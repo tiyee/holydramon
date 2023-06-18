@@ -3,7 +3,6 @@ package components
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/tiyee/holydramon/consts"
 	"time"
 )
 
@@ -12,11 +11,11 @@ var WDb *sql.DB
 
 const MaxIdle int = 20
 const MaxOpen int = 20
-const RDsn = consts.RDsn
-const WDsn = consts.WDsn
 
-func InitMysql() error {
-	if db, err := sql.Open("mysql", RDsn); err == nil {
+// dsn = "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8mb4"
+
+func InitMysql(rDsn, wDsn string) error {
+	if db, err := sql.Open("mysql", rDsn); err == nil {
 		db.SetConnMaxLifetime(time.Second * 20)
 		db.SetMaxIdleConns(MaxIdle)
 		db.SetMaxOpenConns(MaxOpen)
@@ -28,7 +27,7 @@ func InitMysql() error {
 	} else {
 		return err
 	}
-	if db, err := sql.Open("mysql", WDsn); err == nil {
+	if db, err := sql.Open("mysql", wDsn); err == nil {
 		db.SetConnMaxLifetime(time.Second * 20)
 		db.SetMaxIdleConns(MaxIdle)
 		db.SetMaxOpenConns(MaxOpen)
