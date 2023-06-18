@@ -1,0 +1,15 @@
+package router
+
+import (
+	"github.com/tiyee/holydramon/engine"
+	"github.com/tiyee/holydramon/handles"
+	"github.com/tiyee/holydramon/hooks"
+)
+
+func LoadRouter(r engine.IRouter) {
+
+	r.GET("/test", handles.Test)
+	r.SetRest("/user", handles.User{})
+
+	r.Use(engine.PosAhead, engine.Prefix("/wx", []string{}), hooks.Authorize)
+}
