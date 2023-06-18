@@ -21,3 +21,5 @@
 /.vscode
 *.DS_Store
 /conf/local.toml
+
+./holydramon.jpg

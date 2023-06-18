@@ -19,9 +19,4 @@ A minimalist Go web framework
 ## 使用方法
 
 1. `git clone git@github.com:tiyee/holydramon.git`
-2. cd holydramon
-3. sh ./build.sh
-4. sh ./run.sh -c conf/application.toml
-
-
-
+2. go run cmd/main.go
