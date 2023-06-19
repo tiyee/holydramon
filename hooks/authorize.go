@@ -13,7 +13,7 @@ func Authorize(c *engine.Context) {
 		c.Abort()
 		return
 	}
-	j := jwt.New[*jwt.User]()
+	j := jwt.New[*jwt.User]([]byte("12345"))
 	user := &jwt.User{}
 	if err := j.Decode([]byte(token), user); err == nil {
 		c.SetUserValue("jwt", user)
@@ -31,7 +31,7 @@ func AuthorizeAdmin(c *engine.Context) {
 		c.Abort()
 		return
 	}
-	j := jwt.New[*jwt.User]()
+	j := jwt.New[*jwt.User]([]byte("12345"))
 	user := &jwt.User{}
 	if err := j.Decode([]byte(ck), user); err == nil {
 		c.SetUserValue("jwt", user)
