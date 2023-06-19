@@ -9,7 +9,7 @@ import (
 func LoadRouter(r engine.IRouter) {
 
 	r.GET("/test", handles.Test)
-	r.SetRest("/user", handles.User{})
+	r.Rest("/user", handles.User{})
 
 	r.Use(engine.PosAhead, engine.Prefix("/wx", []string{}), hooks.Authorize)
 }
