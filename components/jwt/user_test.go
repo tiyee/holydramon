@@ -10,7 +10,7 @@ func TestHelloWorld(t *testing.T) {
 
 func UserTest(t *testing.T) {
 	user := User{Uid: 1, Name: "test"}
-	j := New[*User]()
+	j := New[*User]([]byte("hello world"))
 	bs := j.Encode(&user)
 	u := User{Uid: 0, Name: ""}
 	if err := j.Decode(bs, &u); err == nil {

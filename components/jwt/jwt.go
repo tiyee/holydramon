@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/tiyee/holydramon/components/crypto/base64"
-	"github.com/tiyee/holydramon/components/crypto/sha256"
+	"github.com/tiyee/holydramon/components/crypto/hmac"
 )
 
 type IPayload interface {
@@ -24,17 +24,21 @@ type JWT[T IPayload] struct {
 	secret []byte
 }
 
-func New[T IPayload](opts ...IOpt[T]) *JWT[T] {
+func New[T IPayload](secret []byte, opts ...IOpt[T]) *JWT[T] {
 	jwt := &JWT[T]{
 		header: Header{
 			Algorithm: "HS256",
 			Typ:       "JWT",
 		},
+		secret: secret,
 	}
 	for _, opt := range opts {
 		opt(jwt)
 	}
 	return jwt
+}
+func (j *JWT[T]) SetHeader(h Header) {
+	j.header = h
 }
 func (j *JWT[T]) Header() Header {
 	return j.header
@@ -50,18 +54,15 @@ func (j *JWT[T]) Encode(pl T) []byte {
 	body = append(body, header...)
 	body = append(body, '.')
 	body = append(body, payload...)
-	body = append(body, '.')
-	body = append(body, j.secret...)
-	if signature, err := sha256.Encrypt(body); err == nil {
-		body = append(body, '.')
-		body = append(body, signature...)
-		buff := bytes.NewBufferString("Bearer ")
-		buff.Write(body)
-		return buff.Bytes()
 
-	} else {
-		return []byte{}
-	}
+	signature := hmac.Sha256Encrypt(body, j.secret)
+
+	body = append(body, '.')
+	body = append(body, signature...)
+	buff := bytes.NewBufferString("Bearer ")
+	buff.Write(body)
+	return buff.Bytes()
+
 }
 func (j *JWT[T]) Decode(bs []byte, pl T) error {
 	if bytes.Index(bs, []byte("Bearer ")) != 0 {
@@ -72,18 +73,34 @@ func (j *JWT[T]) Decode(bs []byte, pl T) error {
 	if len(jwt) != 3 {
 		return errors.New("invalid token")
 	}
-	body := [][]byte{jwt[0], jwt[1], j.secret}
-	if signature, err := sha256.Encrypt(bytes.Join(body, []byte{'.'})); err == nil {
-		if string(signature) == string(jwt[2]) {
-			if err := pl.Decode(jwt[1]); err == nil {
+	if bs, err := base64.UrlDecode(jwt[0]); err == nil {
+		if err := json.Unmarshal(bs, &j.header); err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
+	body := [][]byte{jwt[0], jwt[1]}
+	if signature := hmac.Sha256Encrypt(bytes.Join(body, []byte{'.'}), j.secret); string(signature) == string(jwt[2]) {
+		if bs, err := base64.UrlDecode(jwt[1]); err == nil {
+			if err := pl.Decode(bs); err == nil {
 				return nil
 			} else {
 				return err
 			}
 		} else {
-			return errors.New("algorithm mismatch")
+			return err
 		}
+
 	} else {
-		return err
+		return errors.New("dismatch token")
 	}
+}
+func Encode[T IPayload](payload T, secret []byte) []byte {
+	j := New[T](secret)
+	return j.Encode(payload)
+}
+func Decode[T IPayload](bs []byte, secret []byte, payload T) error {
+	j := New[T](secret)
+	return j.Decode(bs, payload)
 }
