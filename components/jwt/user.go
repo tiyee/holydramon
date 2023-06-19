@@ -1,9 +1,7 @@
 package jwt
 
 import (
-	"bytes"
 	"encoding/json"
-	"github.com/tiyee/holydramon/components/crypto/base64"
 )
 
 type User struct {
@@ -12,11 +10,10 @@ type User struct {
 }
 
 func (u *User) Encode() []byte {
-	buff := bytes.Buffer{}
 	if bs, err := json.Marshal(u); err == nil {
-		buff.Write(base64.UrlEncode(bs))
+		return bs
 	}
-	return buff.Bytes()
+	return []byte{}
 
 }
 func (u *User) Decode(bs []byte) error {
