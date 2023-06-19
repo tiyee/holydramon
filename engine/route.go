@@ -16,7 +16,7 @@ type IRouter interface {
 	DELETE(path string, fn ...HandlerFunc)
 	OPTIONS(path string, fn ...HandlerFunc)
 	Use(pos HookPos, matcher IMatcher, fn HandlerFunc)
-	SetRest(path string, rest any)
+	Rest(path string, rest any)
 }
 type IHttpGET interface {
 	GET(ctx *Context)

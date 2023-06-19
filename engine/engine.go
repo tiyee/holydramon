@@ -115,6 +115,9 @@ func (e *Engine) OPTIONS(path string, fn ...HandlerFunc) {
 func (e *Engine) PATCH(path string, fn ...HandlerFunc) {
 	e.setRoute(http.MethodPatch, path, fn...)
 }
+func (e *Engine) Rest(path string, rest any) {
+	e.SetRest(path, rest)
+}
 func (e *Engine) SetRest(path string, rest any) {
 	flag := 0
 	if hd, ok := rest.(IHttpGET); ok {
