@@ -104,6 +104,7 @@ func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 	c.handlers = c.handlers[:0]
 	c.index = 0
 	c.queryParsed = false
+	c.userData = map[string]any{}
 	c.ctx = context.Background()
 }
 func (c *Context) Error(message string, code int) {
