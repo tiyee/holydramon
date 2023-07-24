@@ -35,10 +35,10 @@ func New[T ITable](data T) *ORM[T] {
 	}
 }
 func (c *ORM[T]) TableName() string {
-	return c.Record.TableName()
+	return "`" + c.Record.TableName() + "`"
 }
 func (c *ORM[T]) Pk() string {
-	return c.Record.Pk()
+	return "`" + c.Record.Pk() + "`"
 }
 func (c *ORM[T]) Fields() string {
 	xt := reflect.TypeOf(c.Record)
