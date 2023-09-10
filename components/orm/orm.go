@@ -25,14 +25,36 @@ type ITable interface {
 	TableName() string
 	Pk() string
 }
+type IDBHandle interface {
+	QueryRow(query string, args ...any) *sql.Row
+	Query(query string, args ...any) (*sql.Rows, error)
+	Prepare(query string) (*sql.Stmt, error)
+	Exec(query string, args ...any) (sql.Result, error)
+}
 type ORM[T ITable] struct {
 	Record T
+	wdb    IDBHandle
+	rdb    IDBHandle
 }
 
 func New[T ITable](data T) *ORM[T] {
 	return &ORM[T]{
 		Record: data,
+		rdb:    components.RDb,
+		wdb:    components.WDb,
 	}
+}
+func (c *ORM[T]) SetRDb(rdb IDBHandle) *ORM[T] {
+
+	c.rdb = rdb
+	return c
+
+}
+func (c *ORM[T]) SetWDb(wdb IDBHandle) *ORM[T] {
+
+	c.wdb = wdb
+	return c
+
 }
 func (c *ORM[T]) TableName() string {
 	return "`" + c.Record.TableName() + "`"
@@ -55,10 +77,7 @@ func (c *ORM[T]) Fields() string {
 }
 
 func (c *ORM[T]) Row(where string, values []interface{}) (T, error) {
-	db := components.RDb
-	if err := db.Ping(); err != nil {
-		return c.Record, err
-	}
+	db := c.rdb
 	conditions := []string{"select", c.Fields(), "from", c.TableName()}
 	if len(where) > 3 {
 		conditions = append(conditions, "where", where)
@@ -70,7 +89,7 @@ func (c *ORM[T]) Row(where string, values []interface{}) (T, error) {
 	}
 }
 func (c *ORM[T]) Count(where string, values []interface{}) (int64, error) {
-	db := components.RDb
+	db := c.rdb
 	conditions := []string{"select count(*) as n  from", c.TableName()}
 	if len(where) > 3 {
 		conditions = append(conditions, "where", where)
@@ -84,7 +103,7 @@ func (c *ORM[T]) Count(where string, values []interface{}) (int64, error) {
 }
 
 func (c *ORM[T]) Rows(where string, values []interface{}) ([]T, error) {
-	db := components.RDb
+	db := c.rdb
 	conditions := []string{
 		"select",
 		c.Fields(),
@@ -107,7 +126,7 @@ func (c *ORM[T]) Rows(where string, values []interface{}) ([]T, error) {
 		rows.Close()
 		return results, nil
 	} else {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return []T{}, nil
 		}
 		myErr = err
@@ -124,7 +143,7 @@ func (c *ORM[T]) Save() (int64, error) {
 		values = append(values, ptr)
 		placements = append(placements, "?")
 	}
-	db := components.WDb
+	db := c.wdb
 	sqlFmt := fmt.Sprintf(" insert into %s (%s) values (%s)", c.TableName(), c.Fields(), strings.Join(placements, ","))
 
 	if result, err := db.Exec(sqlFmt, values...); err == nil {
@@ -154,7 +173,7 @@ func (c *ORM[T]) Saves(rows []T) (int64, error) {
 		values = append(values, value)
 
 	}
-	db := components.WDb
+	db := c.wdb
 	sqlFmt := fmt.Sprintf(" insert into %s (%s) values (%s)", c.TableName(), c.Fields(), strings.Join(placements, ","))
 	if stmt, err := db.Prepare(sqlFmt); err == nil {
 		defer stmt.Close()
@@ -172,7 +191,7 @@ func (c *ORM[T]) Saves(rows []T) (int64, error) {
 }
 
 func (c *ORM[T]) Limit(where string, values []interface{}, offset, size int64, order string) ([]T, error) {
-	db := components.RDb
+	db := c.rdb
 	conditions := []string{
 		"select",
 		c.Fields(),
@@ -217,7 +236,7 @@ func (c *ORM[T]) UpdateByPk(data map[string]interface{}, pk int64) (int64, error
 		values = append(values, v)
 	}
 	values = append(values, pk)
-	db := components.WDb
+	db := c.wdb
 	sqls := []string{"update", c.TableName(), "set", strings.Join(condition, ","), "where " + c.Pk() + "=?"}
 	if ret, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
 		return ret.RowsAffected()
@@ -250,7 +269,7 @@ func (c *ORM[T]) Update(pk int64) (int64, error) {
 		return 0, errors.New("empty conditions")
 	}
 	values = append(values, pk)
-	db := components.WDb
+	db := c.wdb
 	sqls := []string{"update", c.Record.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
 	if _, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
 		return 1, nil
