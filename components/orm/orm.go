@@ -273,7 +273,7 @@ func (c *ORM[T]) Update(pk int64) (int64, error) {
 	}
 	values = append(values, pk)
 	db := c.wdb
-	sqls := []string{"update", c.Record.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
+	sqls := []string{"update", c.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
 	if _, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
 		return 1, nil
 	} else {
