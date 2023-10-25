@@ -25,13 +25,13 @@ func InitLogger(out, err []string) {
 	logger.Info("log initialize")
 }
 func InitCustomerLogger(out, err []string, development, disableStacktrace, disableCaller bool) {
-	logger = GetLogger(out, err, false, true, true)
+	logger = GetLogger(out, err, development, disableStacktrace, disableCaller)
 	defer func() {
 		if err := logger.Sync(); err != nil {
 			fmt.Println(err.Error())
 		}
 	}()
-	logger.Info("log initialize")
+	logger.Info("Customer log initialize")
 }
 func GetLogger(outputPath, errorPath []string, development, disableStacktrace, disableCaller bool) *log.Logger {
 	encoderConfig := logcore.EncoderConfig{
