@@ -16,7 +16,7 @@ type (
 var logger *log.Logger
 
 func InitLogger(out, err []string) {
-	logger = GetLogger(out, err)
+	logger = GetLogger(out, err, false, true, true)
 	defer func() {
 		if err := logger.Sync(); err != nil {
 			fmt.Println(err.Error())
@@ -24,7 +24,16 @@ func InitLogger(out, err []string) {
 	}()
 	logger.Info("log initialize")
 }
-func GetLogger(outputPath, errorPath []string) *log.Logger {
+func InitCustomerLogger(out, err []string, development, disableStacktrace, disableCaller bool) {
+	logger = GetLogger(out, err, development, disableStacktrace, disableCaller)
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
+	logger.Info("Customer log initialize")
+}
+func GetLogger(outputPath, errorPath []string, development, disableStacktrace, disableCaller bool) *log.Logger {
 	encoderConfig := logcore.EncoderConfig{
 		TimeKey:        "time",
 		LevelKey:       "level",
@@ -44,9 +53,9 @@ func GetLogger(outputPath, errorPath []string) *log.Logger {
 
 	config := log.Config{
 		Level:             atom,
-		Development:       false,
-		DisableStacktrace: true,
-		DisableCaller:     true,
+		Development:       development,
+		DisableStacktrace: disableStacktrace,
+		DisableCaller:     disableCaller,
 		Encoding:          "json",
 		EncoderConfig:     encoderConfig,
 		InitialFields:     map[string]interface{}{},

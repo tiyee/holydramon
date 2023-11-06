@@ -25,12 +25,15 @@ type ITable interface {
 	TableName() string
 	Pk() string
 }
-type IDBHandle interface {
+type IExecutor interface {
 	QueryRow(query string, args ...any) *sql.Row
 	Query(query string, args ...any) (*sql.Rows, error)
 	Prepare(query string) (*sql.Stmt, error)
 	Exec(query string, args ...any) (sql.Result, error)
 }
+
+// IDBHandle Deprecated, please use `IExecutor` instead
+type IDBHandle IExecutor
 type ORM[T ITable] struct {
 	Record T
 	wdb    IDBHandle
@@ -270,7 +273,7 @@ func (c *ORM[T]) Update(pk int64) (int64, error) {
 	}
 	values = append(values, pk)
 	db := c.wdb
-	sqls := []string{"update", c.Record.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
+	sqls := []string{"update", c.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
 	if _, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
 		return 1, nil
 	} else {
