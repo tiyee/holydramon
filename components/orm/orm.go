@@ -280,3 +280,12 @@ func (c *ORM[T]) Update(pk int64) (int64, error) {
 		return 0, err
 	}
 }
+func (c *ORM[T]) Delete(pk int64) (int64, error) {
+	db := c.wdb
+	sqls := []string{"delete", c.TableName(), "where " + c.Record.Pk() + "=?"}
+	if _, err := db.Exec(strings.Join(sqls, " "), []any{pk}); err == nil {
+		return 1, nil
+	} else {
+		return 0, err
+	}
+}
