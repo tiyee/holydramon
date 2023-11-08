@@ -274,17 +274,17 @@ func (c *ORM[T]) Update(pk int64) (int64, error) {
 	values = append(values, pk)
 	db := c.wdb
 	sqls := []string{"update", c.TableName(), "set", strings.Join(conditions, ","), "where " + c.Record.Pk() + "=?"}
-	if _, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
-		return 1, nil
+	if ret, err := db.Exec(strings.Join(sqls, " "), values...); err == nil {
+		return ret.RowsAffected()
 	} else {
 		return 0, err
 	}
 }
 func (c *ORM[T]) Delete(pk int64) (int64, error) {
 	db := c.wdb
-	sqls := []string{"delete", c.TableName(), "where " + c.Record.Pk() + "=?"}
-	if _, err := db.Exec(strings.Join(sqls, " "), []any{pk}); err == nil {
-		return 1, nil
+	sqls := []string{"delete", c.TableName(), "where " + c.Record.Pk() + "= ?"}
+	if ret, err := db.Exec(strings.Join(sqls, " "), []any{pk}); err == nil {
+		return ret.RowsAffected()
 	} else {
 		return 0, err
 	}
