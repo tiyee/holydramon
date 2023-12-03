@@ -5,8 +5,9 @@ import (
 )
 
 type User struct {
-	Uid  int64  `json:"u"`
-	Name string `json:"n"`
+	Uid     int64  `json:"u"`
+	Name    string `json:"n"`
+	Expired int64  `json:"exp"`
 }
 
 func (u *User) Encode() []byte {

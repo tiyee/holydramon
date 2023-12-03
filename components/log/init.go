@@ -50,7 +50,6 @@ func GetLogger(outputPath, errorPath []string, development, disableStacktrace, d
 
 	// 设置日志级别
 	atom := log.NewAtomicLevelAt(log.DebugLevel)
-
 	config := log.Config{
 		Level:             atom,
 		Development:       development,
