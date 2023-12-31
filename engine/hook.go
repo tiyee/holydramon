@@ -7,8 +7,10 @@ import (
 
 type HookPos int
 
-const PosAhead HookPos = 1
-const PosBehind HookPos = 2
+const (
+	PosAhead  HookPos = 1
+	PosBehind HookPos = 2
+)
 
 type IMatcher interface {
 	Match(method, path string) bool
