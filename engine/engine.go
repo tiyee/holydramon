@@ -14,6 +14,7 @@ type Engine struct {
 	addr   string
 	pool   sync.Pool
 	hooks  []Hook
+	guards []Guard
 }
 type IEnginOpt func(e *Engine)
 
@@ -22,6 +23,7 @@ func New(opts ...IEnginOpt) *Engine {
 		routes: make(map[string]*Route, 0),
 		addr:   ":3003",
 		hooks:  make([]Hook, 0),
+		guards: make([]Guard, 0),
 	}
 	engine.pool.New = func() any {
 		return engine.allocateContext()
@@ -42,12 +44,10 @@ func (e *Engine) allocateContext() *Context {
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	methodS := r.Method
 	pathS := r.URL.Path
-	fmt.Println(pathS)
 	key := methodS + pathS
 	context := e.pool.Get().(*Context)
 	context.reset(w, r)
 	if route, exist := e.routes[key]; exist {
-
 		for _, fn := range route.BeforeHooks {
 			context.handlers = append(context.handlers, fn)
 		}
@@ -74,7 +74,6 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (e *Engine) setRoute(method string, path string, fn ...HandlerFunc) {
-
 	path = "/" + strings.Trim(path, "/")
 	key := method + path
 	e.routes[key] = &Route{
@@ -84,6 +83,9 @@ func (e *Engine) setRoute(method string, path string, fn ...HandlerFunc) {
 		BeforeHooks:  make([]HandlerFunc, 0),
 		AfterHooks:   make([]HandlerFunc, 0),
 	}
+}
+func (e *Engine) SetGuard(gd Guard) {
+	e.guards = append(e.guards, gd)
 }
 func (e *Engine) Run() (err error) {
 	e.dispatch()
@@ -117,6 +119,11 @@ func (e *Engine) PATCH(path string, fn ...HandlerFunc) {
 }
 func (e *Engine) Rest(path string, rest any) {
 	e.SetRest(path, rest)
+}
+func (e *Engine) Union(methods []string, path string, fn ...HandlerFunc) {
+	for _, method := range methods {
+		e.setRoute(method, path, fn...)
+	}
 }
 func (e *Engine) SetRest(path string, rest any) {
 	flag := 0
@@ -160,7 +167,24 @@ func (e *Engine) SetRest(path string, rest any) {
 		panic("empty handle in path: " + path)
 	}
 }
+
 func (e *Engine) dispatch() {
+	pathSets := make(map[string]struct{})
+	for _, route := range e.routes {
+		pathSets[route.Path+route.Method] = struct{}{}
+	}
+
+	for _, guard := range e.guards {
+		for _, route := range e.routes {
+			//如果方法本身存在，就当中间件，否则就当一个路由
+			if _, exist := pathSets[route.Path+route.Method]; exist {
+				e.Use(guard.Pos, Identical(route.Path), guard.HandlerFunc)
+			} else {
+				e.setRoute(string(guard.method), route.Path, guard.HandlerFunc)
+			}
+		}
+
+	}
 	for _, route := range e.routes {
 		for _, hook := range e.hooks {
 			if hook.matcher.Match(route.Method, route.Path) {
