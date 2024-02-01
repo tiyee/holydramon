@@ -177,10 +177,10 @@ func (e *Engine) dispatch() {
 	for _, guard := range e.guards {
 		for _, route := range e.routes {
 			//如果方法本身存在，就当中间件，否则就当一个路由
-			if _, exist := pathSets[route.Path+route.Method]; exist {
+			if _, exist := pathSets[route.Path+string(guard.Method)]; exist {
 				e.Use(guard.Pos, Identical(route.Path), guard.HandlerFunc)
 			} else {
-				e.setRoute(string(guard.method), route.Path, guard.HandlerFunc)
+				e.setRoute(string(guard.Method), route.Path, guard.HandlerFunc)
 			}
 		}
 

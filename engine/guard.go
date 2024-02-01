@@ -15,14 +15,14 @@ const (
 )
 
 type Guard struct {
-	method      HttpMethod
+	Method      HttpMethod
 	Pos         HookPos
 	HandlerFunc HandlerFunc
 }
 
 func Cors(fn HandlerFunc) Guard {
 	return Guard{
-		method:      MethodOptions,
+		Method:      MethodOptions,
 		Pos:         PosAhead,
 		HandlerFunc: fn,
 	}
