@@ -141,6 +141,7 @@ func (c *Context) SetCookie(key string, value []byte, expired time.Duration) {
 		Expires:  time.Now().Add(expired),
 		Secure:   true,
 		Value:    string(value),
+		SameSite: http.SameSiteNoneMode,
 	}
 	http.SetCookie(c.w, cookie)
 }
