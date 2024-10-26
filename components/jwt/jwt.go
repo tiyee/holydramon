@@ -15,8 +15,6 @@ type IPayload interface {
 type Header struct {
 	Algorithm string `json:"alg"`
 	Typ       string `json:"typ"`
-	Expired   int64  `json:"exp"`
-	Audience  string `json:"aud"`
 }
 type IOpt[T IPayload] func(j *JWT[T])
 type JWT[T IPayload] struct {

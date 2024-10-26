@@ -7,24 +7,31 @@ import (
 
 type HookPos int
 
-const PosAhead HookPos = 1
-const PosBehind HookPos = 2
+const (
+	PosAhead  HookPos = 1
+	PosBehind HookPos = 2
+)
 
 type IMatcher interface {
 	Match(method, path string) bool
 }
+type HookOpts func(m IMatcher)
 type Hook struct {
 	matcher     IMatcher
 	Pos         HookPos
 	HandlerFunc HandlerFunc
 }
-
 type Contain struct {
 	sub string
 }
 
-func Contains(sub string) *Contain {
+func Contains(sub string, opts ...HookOpts) *Contain {
+
 	return &Contain{sub: sub}
+
+}
+func (c *Contain) Match(method, path string) bool {
+	return strings.Contains(path, c.sub)
 }
 
 type Reg struct {
@@ -38,6 +45,7 @@ func RegExp(expr string) *Reg {
 	}
 	return &Reg{regexp: reg}
 }
+
 func (r *Reg) Match(method, path string) bool {
 	return r.regexp.MatchString(path)
 
@@ -53,9 +61,6 @@ func Identical(path string) *Identically {
 
 func (i *Identically) Match(method, path string) bool {
 	return path == i.path
-}
-func (c *Contain) Match(method, path string) bool {
-	return strings.Contains(path, c.sub)
 }
 
 type Pre struct {
@@ -75,6 +80,7 @@ func (p *Pre) Match(method, path string) bool {
 	}
 	return strings.HasPrefix(path, p.prefix)
 }
+
 func (e *Engine) Use(pos HookPos, matcher IMatcher, fn HandlerFunc) {
 	e.hooks = append(e.hooks, Hook{
 		matcher:     matcher,
