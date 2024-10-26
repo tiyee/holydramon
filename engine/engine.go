@@ -58,7 +58,7 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Error("recover", log.String("error", fmt.Sprintf("%v", err)))
-				context.Error("内部错误", 500)
+				context.Error("internal error", 500)
 			}
 		}()
 		defer func() {

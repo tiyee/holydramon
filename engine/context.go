@@ -78,6 +78,7 @@ func (c *Context) AjaxSuccess(message string, data any) {
 	c.AjaxJson(0, message, data)
 }
 func (c *Context) JSON(httpCode int, data any) {
+	c.Response().Header().Set("Content-Type", "application/json; charset=utf-8")
 	c.w.WriteHeader(httpCode)
 	if bs, err := json.Marshal(data); err == nil {
 		c.Response().Write(bs)
@@ -143,6 +144,9 @@ func (c *Context) SetCookie(key string, value []byte, expired time.Duration) {
 		Value:    string(value),
 		SameSite: http.SameSiteNoneMode,
 	}
+	http.SetCookie(c.w, cookie)
+}
+func (c *Context) SetCookieV2(cookie *http.Cookie) {
 	http.SetCookie(c.w, cookie)
 }
 func (c *Context) SetAuthorization(s string) {
