@@ -3,6 +3,7 @@ package engine
 type HandlerFunc func(ctx *Context)
 type Route struct {
 	Method       string
+	Methods      int
 	Path         string
 	BeforeHooks  []HandlerFunc
 	AfterHooks   []HandlerFunc
@@ -17,6 +18,8 @@ type IRouter interface {
 	OPTIONS(path string, fn ...HandlerFunc)
 	Use(pos HookPos, matcher IMatcher, fn HandlerFunc)
 	Rest(path string, rest any)
+	Union(methods []string, path string, fn ...HandlerFunc)
+	SetGuard(gd Guard)
 }
 type IHttpGET interface {
 	GET(ctx *Context)
