@@ -7,6 +7,7 @@ type ICacheM interface {
   MSet(values map[string][]byte)error
   MSetE(values map[string][]byte, exp time.Duration) error
   MGet(keys ...string)([][]byte,error)
+  MDelete(keys ...string) error
 }
 
 var _cacheM ICacheM
@@ -22,4 +23,7 @@ func MSetE(values map[string][]byte, exp time.Duration) error {
 }
 func MGet(keys ...string)([][]byte, error) {
   return _cacheM.MGet(keys...)
+}
+func MDelete(keys ...string) error {
+  return _cacheM.MDelete(keys...)
 }
