@@ -174,7 +174,7 @@ func (c *Context) Query(key string) string {
 	return c.queryMap.Get(key)
 }
 func (c *Context) QueryInt(key string, missing int) int {
-	return int(c.QueryInt64(key,int64(missing))
+	return int(c.QueryInt64(key,int64(missing)))
 }
 func (c *Context) QueryInt64(key string, missing int64) int64 {
 	c.initQueryCache()
