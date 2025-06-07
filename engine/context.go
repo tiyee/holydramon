@@ -174,13 +174,16 @@ func (c *Context) Query(key string) string {
 	return c.queryMap.Get(key)
 }
 func (c *Context) QueryInt(key string, missing int) int {
+	return int(c.QueryInt64(key,int64(missing))
+}
+func (c *Context) QueryInt64(key string, missing int64) int64 {
 	c.initQueryCache()
 	s := c.queryMap.Get(key)
 	if len(s) == 0 {
 		return missing
 	}
-	if n, err := strconv.ParseInt(s, 10, 32); err == nil {
-		return int(n)
+	if n, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return n
 	}
 	return missing
 }
