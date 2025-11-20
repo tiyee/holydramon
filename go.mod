@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/go-sql-driver/mysql v1.9.3
-	github.com/redis/go-redis/v9 v9.16.0
-	go.uber.org/zap v1.27.0
+	github.com/redis/go-redis/v9 v9.17.0
+	go.uber.org/zap v1.27.1
 )
 
 require (
