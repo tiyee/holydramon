@@ -3,10 +3,9 @@ package orm
 import (
 	"github.com/tiyee/holydramon/components"
 	"github.com/tiyee/holydramon/components/log"
-	"github.com/tiyee/holydramon/components/orm"
 )
 
-func AutoTransaction(trans func(db orm.IDBHandle) error) error {
+func AutoTransaction(trans func(db IDBHandle) error) error {
 	conn, err := components.WDb.Begin()
 	if err != nil {
 		log.Error("transaction begin err", log.String("error", err.Error()))
