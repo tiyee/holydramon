@@ -1,3 +1,5 @@
+package orm
+
 import (
 	"github.com/tiyee/holydramon/components"
 	"github.com/tiyee/holydramon/components/log"
