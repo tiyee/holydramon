@@ -104,7 +104,19 @@ func (c *ORM[T]) Count(where string, values []interface{}) (int64, error) {
 		return 0, err
 	}
 }
-
+func (c *ORM[T]) Sum(col, where string, values []interface{}) (int64, error) {
+	db := c.rdb
+	conditions := []string{"select sum(`"+col+"`) as n  from", c.TableName()}
+	if len(where) > 3 {
+		conditions = append(conditions, "where", where)
+	}
+	var n int64
+	if err := db.QueryRow(strings.Join(conditions, " "), values...).Scan(&n); err == nil {
+		return n, nil
+	} else {
+		return 0, err
+	}
+}
 func (c *ORM[T]) Rows(where string, values []interface{}) ([]T, error) {
 	db := c.rdb
 	conditions := []string{
