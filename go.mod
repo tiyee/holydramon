@@ -3,9 +3,9 @@ module github.com/tiyee/holydramon
 go 1.18
 
 require (
-	github.com/go-sql-driver/mysql v1.9.3
-	github.com/redis/go-redis/v9 v9.17.3
-	go.uber.org/zap v1.27.1
+	github.com/go-sql-driver/mysql v1.10.0
+	github.com/redis/go-redis/v9 v9.19.0
+	go.uber.org/zap v1.28.0
 )
 
 require (
