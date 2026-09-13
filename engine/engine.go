@@ -87,7 +87,7 @@ func (e *Engine) setRoute(method string, path string, fn ...HandlerFunc) {
 func (e *Engine) SetGuard(gd Guard) {
 	e.guards = append(e.guards, gd)
 }
-func (e *Engine) Run() (err error) {
+func (e *Engine) Run(ops ...func(server *http.Server)) (err error) {
 	e.dispatch()
 	if len(e.addr) < 3 {
 		return errors.New("empty addr")
@@ -95,8 +95,19 @@ func (e *Engine) Run() (err error) {
 	if len(e.routes) == 0 {
 		return errors.New("empty routes")
 	}
-	return http.ListenAndServe(e.addr, e)
-
+	server := &http.Server{
+		Addr:              e.addr,
+		Handler:           e,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    1 << 16,
+	}
+	for _, op := range ops {
+		op(server)
+	}
+	return server.ListenAndServe()
 }
 func (e *Engine) GET(path string, fn ...HandlerFunc) {
 	e.setRoute(http.MethodGet, path, fn...)
