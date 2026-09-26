@@ -11,6 +11,11 @@ func AutoTransaction(trans func(db IDBHandle) error) error {
 		log.Error("transaction begin err", log.String("error", err.Error()))
 		return err
 	}
+    defer func() {  
+		if rbErr := conn.Rollback(); rbErr != nil && rbErr != sql.ErrTxDone {
+			log.Error("transaction Rollback failed", log.String("error", rbErr.Error()))
+		}
+	}()
 	if err = trans(conn); err != nil {
 		log.Error("transaction exec failed",
 			log.String("error", err.Error()),
