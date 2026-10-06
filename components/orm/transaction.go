@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"database/sql"
 	"github.com/tiyee/holydramon/components"
 	"github.com/tiyee/holydramon/components/log"
 )
